@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Xpdeal\Pixphp\Services;
 
+use JetBrains\PhpStorm\Pure;
+
 class PixService
 {
     const ID_PAYLOAD_FORMAT_INDICATOR = '00';
@@ -19,15 +21,25 @@ class PixService
     const ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID = '05';
     const ID_CRC16 = '63';
 
-    private function getCRC16($payload)
-    {
-        //ADICIONA DADOS GERAIS NO PAYLOAD
-        $payload .= self::ID_CRC16 . '04';
+    private $pixKey;
+    private $description;
+    private $merchantName;
+    private $merchantCity;
+    private $txId;
+    private $amount;
 
+    /**
+     * @param  string  $payload
+     *
+     * @return string
+     */
+    private function getCRC16(string $payload): string
+    {
+
+        $payload .= self::ID_CRC16 . '04';
 
         $polinomio = 0x1021;
         $resultado = 0xFFFF;
-
 
         if (($length = strlen($payload)) > 0) {
             for ($offset = 0; $offset < $length; $offset++) {
@@ -43,20 +55,23 @@ class PixService
         return self::ID_CRC16 . '04' . strtoupper(dechex($resultado));
     }
 
-    private $pixKey;
-    private $description;
-    private $merchantName;
-    private $merchantCity;
-    private $txId;
-    private $amount;
-
-    public function setPixKey($pixKey)
+    /**
+     * @param  string  $pixKey
+     *
+     * @return $this
+     */
+    public function setPixKey(string $pixKey): PixService
     {
         $this->pixKey = $pixKey;
         return $this;
     }
 
-    public function setDescription($description)
+    /**
+     * @param  string  $description
+     *
+     * @return $this
+     */
+    public function setDescription(string $description): PixService
     {
         if (!empty($description)) {
             $this->description = substr($description, 0, 10);
@@ -65,45 +80,60 @@ class PixService
         return $this;
     }
 
-    public function setMerchantName($merchantName)
+    /**
+     * @param  string  $merchantName
+     *
+     * @return $this
+     */
+    public function setMerchantName(string $merchantName): PixService
     {
         $this->merchantName = substr($merchantName, 0, 24);
         return $this;
     }
 
-    public function setMerchantCity($merchantCity)
+    /**
+     * @param  string  $merchantCity
+     *
+     * @return $this
+     */public function setMerchantCity(string $merchantCity): PixService
     {
         $this->merchantCity = substr($merchantCity, 0, 14);
         return $this;
     }
 
-    public function setTxId($txId)
+    public function setTxId(string $txId): PixService
     {
         $this->txId = substr($txId, 0, 7);
         return $this;
     }
 
-    public function setAmount($amount)
+    /**
+     * @param  int|float  $amount
+     *
+     * @return $this
+     */public function setAmount(int|float $amount): PixService
     {
         $this->amount = (string) number_format($amount, 2, '.', '');
         return $this;
     }
 
+
     /**
-     * @param $id
+     * @param  string  $id
      * @param  string  $value
      *
      * @return string
      */
     private function getValue(
-        $id,
+        string $id,
         string $value
     ): string {
         $size = str_pad((string)strlen($value), 2, '0',  STR_PAD_LEFT);
         return $id . $size . $value;
     }
 
-    private function getMerchantAccountInformation()
+    #[Pure]
+    private function getMerchantAccountInformation(): string
     {
         $gui = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_GUI, 'br.gov.bcb.pix');
         $key = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_KEY, $this->pixKey);
@@ -112,18 +142,28 @@ class PixService
         return $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION, $gui . $key . $description);
     }
 
-    private function getAdditionalDataFieldTemplate()
+    /**
+     * @return string
+     */
+    #[Pure]
+    private function getAdditionalDataFieldTemplate(): string
     {
         $txId = $this->getValue(self::ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID, $this->txId);
         return $this->getValue(self::ID_ADDITIONAL_DATA_FIELD_TEMPLATE, $txId);
     }
 
-    public function getAmountFormat()
+    /**
+     * @return mixed
+     */
+    public function getAmountFormat(): mixed
     {
         return $this->amount;
     }
 
-    public function getPayload()
+    /**
+     * @return string
+     */
+    public function getPayload(): string
     {
         $payload = $this->getValue(self::ID_PAYLOAD_FORMAT_INDICATOR, '01')
             . $this->getMerchantAccountInformation()
@@ -137,8 +177,5 @@ class PixService
 
         return $payload . $this->getCRC16($payload);
     }
-    public function ping()
-    {
-        return 123;
-    }
+
 }

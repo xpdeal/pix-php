@@ -6,27 +6,27 @@ use JetBrains\PhpStorm\Pure;
 
 class PixService
 {
-    const ID_PAYLOAD_FORMAT_INDICATOR = '00';
-    const ID_MERCHANT_ACCOUNT_INFORMATION = '26';
-    const ID_MERCHANT_ACCOUNT_INFORMATION_GUI = '00';
-    const ID_MERCHANT_ACCOUNT_INFORMATION_KEY = '01';
-    const ID_MERCHANT_ACCOUNT_INFORMATION_DESCRIPTION = '02';
-    const ID_MERCHANT_CATEGORY_CODE = '52';
-    const ID_TRANSACTION_CURRENCY = '53';
-    const ID_TRANSACTION_AMOUNT = '54';
-    const ID_COUNTRY_CODE = '58';
-    const ID_MERCHANT_NAME = '59';
-    const ID_MERCHANT_CITY = '60';
-    const ID_ADDITIONAL_DATA_FIELD_TEMPLATE = '62';
-    const ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID = '05';
-    const ID_CRC16 = '63';
+    public const ID_PAYLOAD_FORMAT_INDICATOR = '00';
+    public const ID_MERCHANT_ACCOUNT_INFORMATION = '26';
+    public const ID_MERCHANT_ACCOUNT_INFORMATION_GUI = '00';
+    public const ID_MERCHANT_ACCOUNT_INFORMATION_KEY = '01';
+    public const ID_MERCHANT_ACCOUNT_INFORMATION_DESCRIPTION = '02';
+    public const ID_MERCHANT_CATEGORY_CODE = '52';
+    public const ID_TRANSACTION_CURRENCY = '53';
+    public const ID_TRANSACTION_AMOUNT = '54';
+    public const ID_COUNTRY_CODE = '58';
+    public const ID_MERCHANT_NAME = '59';
+    public const ID_MERCHANT_CITY = '60';
+    public const ID_ADDITIONAL_DATA_FIELD_TEMPLATE = '62';
+    public const ID_ADDITIONAL_DATA_FIELD_TEMPLATE_TXID = '05';
+    public const ID_CRC16 = '63';
 
-    private $pixKey;
-    private $description;
-    private $merchantName;
-    private $merchantCity;
-    private $txId;
-    private $amount;
+    private string $pixKey;
+    private string  $description;
+    private string  $merchantName;
+    private string  $merchantCity;
+    private string $txId;
+    private float|int $amount;
 
     /**
      * @param  string  $payload
@@ -95,7 +95,8 @@ class PixService
      * @param  string  $merchantCity
      *
      * @return $this
-     */public function setMerchantCity(string $merchantCity): PixService
+     */
+    public function setMerchantCity(string $merchantCity): PixService
     {
         $this->merchantCity = substr($merchantCity, 0, 14);
         return $this;
@@ -111,7 +112,8 @@ class PixService
      * @param  int|float  $amount
      *
      * @return $this
-     */public function setAmount(int|float $amount): PixService
+     */
+    public function setAmount(int|float $amount): PixService
     {
         $this->amount = (string) number_format($amount, 2, '.', '');
         return $this;

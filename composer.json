@@ -1,0 +1,19 @@
+{
+    "name": "xpdeal/pixphp",
+    "description": "Pix Service",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Xpdeal\\Pixphp\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jordan XP",
+            "email": "brasil@xpdeal.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    }
+}

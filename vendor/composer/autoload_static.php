@@ -26,6 +26,11 @@ class ComposerStaticInite3790bb9e35fe5cd28a26c5910b2023b
         array (
             'phpDocumentor\\Reflection\\' => 25,
         ),
+        'c' => 
+        array (
+            'chillerlan\\Settings\\' => 20,
+            'chillerlan\\QRCode\\' => 18,
+        ),
         'X' => 
         array (
             'Xpdeal\\Pixphp\\' => 14,
@@ -87,6 +92,14 @@ class ComposerStaticInite3790bb9e35fe5cd28a26c5910b2023b
             0 => __DIR__ . '/..' . '/phpdocumentor/reflection-common/src',
             1 => __DIR__ . '/..' . '/phpdocumentor/reflection-docblock/src',
             2 => __DIR__ . '/..' . '/phpdocumentor/type-resolver/src',
+        ),
+        'chillerlan\\Settings\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/chillerlan/php-settings-container/src',
+        ),
+        'chillerlan\\QRCode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/chillerlan/php-qrcode/src',
         ),
         'Xpdeal\\Pixphp\\' => 
         array (

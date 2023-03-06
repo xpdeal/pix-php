@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Xpdeal\Pixphp\Services;
 
+use chillerlan\QRCode\{QRCode, QROptions};
+
 class PixService
 {
     public const ID_PAYLOAD_FORMAT_INDICATOR = '00';
@@ -185,5 +187,16 @@ class PixService
             . $this->getAdditionalDataFieldTemplate();
 
         return $payload . $this->getCRC16($payload);
+    }
+
+    /**
+     * @return array
+     */
+    public function getPayloadAndQrcode(): array
+    {
+        $payloadQrcode = $this->getPayload();
+        $qrcode = (new QRCode())->render($payloadQrcode);
+
+        return ['payload' => $payloadQrcode, 'qrcode' => $qrcode];
     }
 }

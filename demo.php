@@ -4,7 +4,7 @@ require_once './vendor/autoload.php';
 
 use Xpdeal\Pixphp\Services\PixService;
 
-$payload= (new PixService())
+$payload = (new PixService())
         ->setPixKey('chave-pix')
         ->setDescription('venda de sapato')
         ->setMerchantName('Fulano da Silva')
@@ -12,5 +12,8 @@ $payload= (new PixService())
         ->setTxId('000.000.000-00')
         ->setAmount(120);
 
+//Get only payload (string)
+echo $payload->getPayloadAndQrcode();
 
-echo $payload->getPayload();
+// Get payload and QRCode (array)
+var_dump($payload->getPayloadAndQrcode());

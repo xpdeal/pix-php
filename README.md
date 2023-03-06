@@ -17,7 +17,7 @@ Gostou? faz um pix 😜 Chave: jordan@vaivo.com (Precisa de ajuda? email jordan@
 	    
 	    use Xpdeal\Pixphp\Services\PixService;
 	    
-	    $payload= (new PixService())
+	    $payload = (new PixService())
 		    ->setPixKey('chave-pix')
 		    ->setDescription('venda de sapato')
 		    ->setMerchantName('Fulano da Silva')
@@ -27,9 +27,12 @@ Gostou? faz um pix 😜 Chave: jordan@vaivo.com (Precisa de ajuda? email jordan@
 		    
 	    echo $payload->getPayload();
 
+        // Get payload and QRCode (array)
+        var_dump($payload->getPayloadAndQrcode());
+
 
 Em breve
 
  - Validação de dados (CPF, Amount, ...)
- - QRCode Base64 generator
+ - QRCode Base64 generator - OK
  - Webhook (PSP Banco emissor)

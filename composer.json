@@ -2,6 +2,7 @@
     "name": "xpdeal/pixphp",
     "description": "Pix Service",
     "type": "library",
+     "license": "MIT",
     "autoload": {
         "psr-4": {
             "Xpdeal\\Pixphp\\": "src/"

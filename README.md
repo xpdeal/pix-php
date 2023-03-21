@@ -6,7 +6,7 @@ Gostou? faz um pix 😜 Chave: jordan@vaivo.com (Precisa de ajuda? email jordan@
 
  Via composer
 
-    composer require xpdeal/pix-php
+    composer require xpdeal/pixphp
 
 
 # Uso

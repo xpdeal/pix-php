@@ -80,7 +80,7 @@ class PixService
     public function setDescription(string $description): PixService
     {
         if (!empty($description)) {
-            $this->description = substr($description, 0, 10);
+            $this->description = substr($description, 0, 100);
         }
 
         return $this;

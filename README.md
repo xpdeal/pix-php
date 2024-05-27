@@ -2,7 +2,9 @@
 
 Solução simples e muito rápida para gerar payloads (PIX) de pagamento únicos
 
-Gostou? faz um pix 😜 Chave: jordan@vaivo.com (Precisa de ajuda? email jordan@xpdeal.com)
+Gostou? faz um pix 😜 Chave: jordan@xpdeal.com (Precisa de ajuda? email jordan@xpdeal.com)
+
+Precisa de soluções de para carteira digital, bitcoin, eth e outros? checkoutweb.com
 
  Via composer
 

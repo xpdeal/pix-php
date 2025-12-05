@@ -28,7 +28,7 @@ class PixService
     private string $merchantName = '';
     private string $merchantCity = '';
     private string $txId = '';
-    private float $amount = 0.0;
+    private string $amount = '0.00';
 
     private function getCRC16(string $payload): string
     {
@@ -74,7 +74,7 @@ class PixService
 
     public function setMerchantCity(string $merchantCity): static
     {
-        $this->merchantCity = substr($merchantCity, 0, 14);
+        $this->merchantCity = substr($merchantCity, 0, 15);
         return $this;
     }
 
@@ -86,7 +86,7 @@ class PixService
 
     public function setAmount(int|float $amount): static
     {
-        $this->amount = (float) number_format($amount, 2, '.', '');
+        $this->amount = number_format((float) $amount, 2, '.', '');
         return $this;
     }
 
@@ -103,11 +103,16 @@ class PixService
 
     private function getMerchantAccountInformation(): string
     {
-        $gui = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_GUI, 'br.gov.bcb.pix');
+        $gui = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_GUI, 'BR.GOV.BCB.PIX');
         $key = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_KEY, $this->pixKey);
-        $description = $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_DESCRIPTION, $this->description);
 
-        return $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION, $gui . $key . $description);
+        $merchantAccountInfo = $gui . $key;
+
+        if (!empty($this->description)) {
+            $merchantAccountInfo .= $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION_DESCRIPTION, $this->description);
+        }
+
+        return $this->getValue(self::ID_MERCHANT_ACCOUNT_INFORMATION, $merchantAccountInfo);
     }
 
     private function getAdditionalDataFieldTemplate(): string
@@ -116,7 +121,7 @@ class PixService
         return $this->getValue(self::ID_ADDITIONAL_DATA_FIELD_TEMPLATE, $txId);
     }
 
-    public function getAmountFormat(): float
+    public function getAmountFormat(): string
     {
         return $this->amount;
     }
@@ -127,7 +132,7 @@ class PixService
             . $this->getMerchantAccountInformation()
             . $this->getValue(self::ID_MERCHANT_CATEGORY_CODE, '0000')
             . $this->getValue(self::ID_TRANSACTION_CURRENCY, '986')
-            . $this->getValue(self::ID_TRANSACTION_AMOUNT, (string) $this->amount)
+            . $this->getValue(self::ID_TRANSACTION_AMOUNT, $this->amount)
             . $this->getValue(self::ID_COUNTRY_CODE, 'BR')
             . $this->getValue(self::ID_MERCHANT_NAME, $this->merchantName)
             . $this->getValue(self::ID_MERCHANT_CITY, $this->merchantCity)

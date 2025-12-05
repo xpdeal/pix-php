@@ -61,7 +61,7 @@ final class MemoryEfficientLongestCommonSubsequenceCalculator implements Longest
 
         return array_merge(
             $this->calculate($fromStart, $toStart),
-            $this->calculate($fromEnd, $toEnd)
+            $this->calculate($fromEnd, $toEnd),
         );
     }
 
@@ -78,7 +78,16 @@ final class MemoryEfficientLongestCommonSubsequenceCalculator implements Longest
                 if ($from[$i] === $to[$j]) {
                     $current[$j + 1] = $prev[$j] + 1;
                 } else {
-                    $current[$j + 1] = max($current[$j], $prev[$j + 1]);
+                    /**
+                     * @noinspection PhpConditionCanBeReplacedWithMinMaxCallInspection
+                     *
+                     * We do not use max() here to avoid the function call overhead
+                     */
+                    if ($current[$j] > $prev[$j + 1]) {
+                        $current[$j + 1] = $current[$j];
+                    } else {
+                        $current[$j + 1] = $prev[$j + 1];
+                    }
                 }
             }
         }

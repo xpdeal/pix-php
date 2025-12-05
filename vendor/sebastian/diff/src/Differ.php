@@ -30,14 +30,10 @@ use SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
 
 final class Differ
 {
-    public const OLD = 0;
-
-    public const ADDED = 1;
-
-    public const REMOVED = 2;
-
-    public const DIFF_LINE_END_WARNING = 3;
-
+    public const OLD                     = 0;
+    public const ADDED                   = 1;
+    public const REMOVED                 = 2;
+    public const DIFF_LINE_END_WARNING   = 3;
     public const NO_LINE_END_EOF_WARNING = 4;
     private DiffOutputBuilderInterface $outputBuilder;
 
@@ -46,14 +42,22 @@ final class Differ
         $this->outputBuilder = $outputBuilder;
     }
 
-    public function diff(array|string $from, array|string $to, LongestCommonSubsequenceCalculator $lcs = null): string
+    /**
+     * @param list<string>|string $from
+     * @param list<string>|string $to
+     */
+    public function diff(array|string $from, array|string $to, ?LongestCommonSubsequenceCalculator $lcs = null): string
     {
         $diff = $this->diffToArray($from, $to, $lcs);
 
         return $this->outputBuilder->getDiff($diff);
     }
 
-    public function diffToArray(array|string $from, array|string $to, LongestCommonSubsequenceCalculator $lcs = null): array
+    /**
+     * @param list<string>|string $from
+     * @param list<string>|string $to
+     */
+    public function diffToArray(array|string $from, array|string $to, ?LongestCommonSubsequenceCalculator $lcs = null): array
     {
         if (is_string($from)) {
             $from = $this->splitStringByLines($from);

@@ -2,7 +2,7 @@
     "name": "xpdeal/pixphp",
     "description": "Pix Service",
     "type": "library",
-     "license": "MIT",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Xpdeal\\Pixphp\\": "src/"
@@ -15,19 +15,21 @@
         }
     ],
     "scripts": {
-        "psalm-run": "./vendor/bin/psalm",
+        "test": "./vendor/bin/phpunit tests/",
         "check": "./vendor/bin/phpstan analyse src --level=8",
         "phpcs-fix": "./vendor/bin/phpcbf -d memory_limit=320M --standard=PSR12 src",
         "phpcs-run": "./vendor/bin/phpcs -d memory_limit=320M --standard=PSR12 src"
     },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "3.*",
-        "phpunit/phpunit": "^10.0",
-        "vimeo/psalm": "^5.7",
-        "phpstan/phpstan": "^1.10"
-    },
     "require": {
-        "chillerlan/php-qrcode": "^4.3"
+        "php": "^8.4",
+        "chillerlan/php-qrcode": "^5.0"
     },
-    "minimum-stability": "dev"
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.10",
+        "phpunit/phpunit": "^11.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "config": {
+        "sort-packages": true
+    }
 }

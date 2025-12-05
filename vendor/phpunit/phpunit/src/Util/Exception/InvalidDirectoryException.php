@@ -13,6 +13,8 @@ use function sprintf;
 use RuntimeException;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class InvalidDirectoryException extends RuntimeException implements Exception
@@ -22,8 +24,8 @@ final class InvalidDirectoryException extends RuntimeException implements Except
         parent::__construct(
             sprintf(
                 '"%s" is not a directory',
-                $directory
-            )
+                $directory,
+            ),
         );
     }
 }

@@ -1,2 +1,19 @@
 /vendor
 .idea
+composer.lock
+
+# Claude Code
+CLAUDE.md
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor
+*.swp
+*.swo
+.vscode/

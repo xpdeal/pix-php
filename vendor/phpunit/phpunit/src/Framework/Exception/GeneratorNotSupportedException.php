@@ -12,6 +12,8 @@ namespace PHPUnit\Framework;
 use function sprintf;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class GeneratorNotSupportedException extends InvalidArgumentException
@@ -21,8 +23,8 @@ final class GeneratorNotSupportedException extends InvalidArgumentException
         return new self(
             sprintf(
                 'Passing an argument of type Generator for the %s parameter is not supported',
-                $parameterName
-            )
+                $parameterName,
+            ),
         );
     }
 }

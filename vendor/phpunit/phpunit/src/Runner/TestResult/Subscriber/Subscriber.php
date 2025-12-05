@@ -10,11 +10,13 @@
 namespace PHPUnit\TestRunner\TestResult;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-abstract class Subscriber
+abstract readonly class Subscriber
 {
-    private readonly Collector $collector;
+    private Collector $collector;
 
     public function __construct(Collector $collector)
     {

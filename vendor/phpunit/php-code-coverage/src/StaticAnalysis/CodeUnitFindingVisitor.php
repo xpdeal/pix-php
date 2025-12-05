@@ -32,21 +32,55 @@ use SebastianBergmann\Complexity\CyclomaticComplexityCalculatingVisitor;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
+ *
+ * @phpstan-type CodeUnitFunctionType = array{
+ *     name: string,
+ *     namespacedName: string,
+ *     namespace: string,
+ *     signature: string,
+ *     startLine: int,
+ *     endLine: int,
+ *     ccn: int
+ * }
+ * @phpstan-type CodeUnitMethodType = array{
+ *     methodName: string,
+ *     signature: string,
+ *     visibility: string,
+ *     startLine: int,
+ *     endLine: int,
+ *     ccn: int
+ * }
+ * @phpstan-type CodeUnitClassType = array{
+ *     name: string,
+ *     namespacedName: string,
+ *     namespace: string,
+ *     startLine: int,
+ *     endLine: int,
+ *     methods: array<string, CodeUnitMethodType>
+ * }
+ * @phpstan-type CodeUnitTraitType = array{
+ *     name: string,
+ *     namespacedName: string,
+ *     namespace: string,
+ *     startLine: int,
+ *     endLine: int,
+ *     methods: array<string, CodeUnitMethodType>
+ * }
  */
 final class CodeUnitFindingVisitor extends NodeVisitorAbstract
 {
     /**
-     * @psalm-var array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     * @var array<string, CodeUnitClassType>
      */
     private array $classes = [];
 
     /**
-     * @psalm-var array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     * @var array<string, CodeUnitTraitType>
      */
     private array $traits = [];
 
     /**
-     * @psalm-var array<string,array{name: string, namespacedName: string, namespace: string, signature: string, startLine: int, endLine: int, ccn: int}>
+     * @var array<string, CodeUnitFunctionType>
      */
     private array $functions = [];
 
@@ -84,7 +118,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     * @return array<string, CodeUnitClassType>
      */
     public function classes(): array
     {
@@ -92,7 +126,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, startLine: int, endLine: int, methods: array<string,array{methodName: string, signature: string, visibility: string, startLine: int, endLine: int, ccn: int}>}>
+     * @return array<string, CodeUnitTraitType>
      */
     public function traits(): array
     {
@@ -100,7 +134,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @psalm-return array<string,array{name: string, namespacedName: string, namespace: string, signature: string, startLine: int, endLine: int, ccn: int}>
+     * @return array<string, CodeUnitFunctionType>
      */
     public function functions(): array
     {
@@ -159,7 +193,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         return $signature;
     }
 
-    private function type(Identifier|Name|ComplexType $type): string
+    private function type(ComplexType|Identifier|Name $type): string
     {
         if ($type instanceof NullableType) {
             return '?' . $type->type;

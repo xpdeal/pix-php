@@ -13,9 +13,11 @@ use PHPUnit\Event\Test\WarningTriggered;
 use PHPUnit\Event\Test\WarningTriggeredSubscriber;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class TestTriggeredWarningSubscriber extends Subscriber implements WarningTriggeredSubscriber
+final readonly class TestTriggeredWarningSubscriber extends Subscriber implements WarningTriggeredSubscriber
 {
     public function notify(WarningTriggered $event): void
     {

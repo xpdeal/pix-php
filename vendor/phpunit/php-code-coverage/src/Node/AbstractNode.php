@@ -19,6 +19,11 @@ use SebastianBergmann\CodeCoverage\Util\Percentage;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
+ *
+ * @phpstan-import-type LinesOfCodeType from \SebastianBergmann\CodeCoverage\StaticAnalysis\FileAnalyser
+ * @phpstan-import-type ProcessedFunctionType from \SebastianBergmann\CodeCoverage\Node\File
+ * @phpstan-import-type ProcessedClassType from \SebastianBergmann\CodeCoverage\Node\File
+ * @phpstan-import-type ProcessedTraitType from \SebastianBergmann\CodeCoverage\Node\File
  */
 abstract class AbstractNode implements Countable
 {
@@ -28,7 +33,7 @@ abstract class AbstractNode implements Countable
     private readonly ?AbstractNode $parent;
     private string $id;
 
-    public function __construct(string $name, self $parent = null)
+    public function __construct(string $name, ?self $parent = null)
     {
         if (str_ends_with($name, DIRECTORY_SEPARATOR)) {
             $name = substr($name, 0, -1);
@@ -126,7 +131,7 @@ abstract class AbstractNode implements Countable
     {
         return Percentage::fromFractionAndTotal(
             $this->numberOfExecutedBranches(),
-            $this->numberOfExecutableBranches()
+            $this->numberOfExecutableBranches(),
         );
     }
 
@@ -134,7 +139,7 @@ abstract class AbstractNode implements Countable
     {
         return Percentage::fromFractionAndTotal(
             $this->numberOfExecutedPaths(),
-            $this->numberOfExecutablePaths()
+            $this->numberOfExecutablePaths(),
         );
     }
 
@@ -148,6 +153,9 @@ abstract class AbstractNode implements Countable
         return $this->numberOfTestedClasses() + $this->numberOfTestedTraits();
     }
 
+    /**
+     * @return array<string, ProcessedClassType|ProcessedTraitType>
+     */
     public function classesAndTraits(): array
     {
         return array_merge($this->classes(), $this->traits());
@@ -163,14 +171,23 @@ abstract class AbstractNode implements Countable
         return $this->numberOfTestedFunctions() + $this->numberOfTestedMethods();
     }
 
+    /**
+     * @return array<string, ProcessedClassType>
+     */
     abstract public function classes(): array;
 
+    /**
+     * @return array<string, ProcessedTraitType>
+     */
     abstract public function traits(): array;
 
+    /**
+     * @return array<string, ProcessedFunctionType>
+     */
     abstract public function functions(): array;
 
     /**
-     * @psalm-return array{linesOfCode: int, commentLinesOfCode: int, nonCommentLinesOfCode: int}
+     * @return LinesOfCodeType
      */
     abstract public function linesOfCode(): array;
 

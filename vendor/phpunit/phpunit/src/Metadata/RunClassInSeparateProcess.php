@@ -10,13 +10,13 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class RunClassInSeparateProcess extends Metadata
+final readonly class RunClassInSeparateProcess extends Metadata
 {
-    public function isRunClassInSeparateProcess(): bool
+    public function isRunClassInSeparateProcess(): true
     {
         return true;
     }

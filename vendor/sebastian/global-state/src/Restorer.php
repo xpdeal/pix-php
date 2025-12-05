@@ -33,7 +33,7 @@ final class Restorer
         foreach (array_keys($GLOBALS) as $key) {
             if ($key !== 'GLOBALS' &&
                 !in_array($key, $superGlobalArrays, true) &&
-                !$snapshot->excludeList()->isGlobalVariableExcluded($key)) {
+                !$snapshot->excludeList()->isGlobalVariableExcluded((string) $key)) {
                 if (array_key_exists($key, $globalVariables)) {
                     $GLOBALS[$key] = $globalVariables[$key];
                 } else {
@@ -53,8 +53,7 @@ final class Restorer
         foreach ($snapshot->staticProperties() as $className => $staticProperties) {
             foreach ($staticProperties as $name => $value) {
                 $reflector = new ReflectionProperty($className, $name);
-                $reflector->setAccessible(true);
-                $reflector->setValue($value);
+                $reflector->setValue(null, $value);
             }
         }
 
@@ -77,8 +76,7 @@ final class Restorer
                     continue;
                 }
 
-                $property->setAccessible(true);
-                $property->setValue($defaults[$name]);
+                $property->setValue(null, $defaults[$name]);
             }
         }
     }
@@ -92,8 +90,8 @@ final class Restorer
             $keys = array_keys(
                 array_merge(
                     $GLOBALS[$superGlobalArray],
-                    $superGlobalVariables[$superGlobalArray]
-                )
+                    $superGlobalVariables[$superGlobalArray],
+                ),
             );
 
             foreach ($keys as $key) {

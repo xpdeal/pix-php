@@ -9,7 +9,7 @@
  */
 namespace PHPUnit\Util;
 
-use const DIRECTORY_SEPARATOR;
+use const PHP_OS_FAMILY;
 use function class_exists;
 use function defined;
 use function dirname;
@@ -38,11 +38,13 @@ use SebastianBergmann\GlobalState\Snapshot;
 use SebastianBergmann\Invoker\Invoker;
 use SebastianBergmann\LinesOfCode\Counter;
 use SebastianBergmann\ObjectEnumerator\Enumerator;
+use SebastianBergmann\ObjectReflector\ObjectReflector;
 use SebastianBergmann\RecursionContext\Context;
 use SebastianBergmann\Template\Template;
 use SebastianBergmann\Timer\Timer;
 use SebastianBergmann\Type\TypeName;
 use SebastianBergmann\Version;
+use staabm\SideEffectsDetector\SideEffectsDetector;
 use TheSeer\Tokenizer\Tokenizer;
 
 /**
@@ -51,7 +53,7 @@ use TheSeer\Tokenizer\Tokenizer;
 final class ExcludeList
 {
     /**
-     * @psalm-var array<string,int>
+     * @var array<string,int>
      */
     private const EXCLUDED_CLASS_NAMES = [
         // composer
@@ -120,6 +122,9 @@ final class ExcludeList
         // sebastian/object-enumerator
         Enumerator::class => 1,
 
+        // sebastian/object-reflector
+        ObjectReflector::class => 1,
+
         // sebastian/recursion-context
         Context::class => 1,
 
@@ -129,18 +134,22 @@ final class ExcludeList
         // sebastian/version
         Version::class => 1,
 
+        // staabm/side-effects-detector
+        SideEffectsDetector::class => 1,
+
         // theseer/tokenizer
         Tokenizer::class => 1,
     ];
 
     /**
-     * @psalm-var list<string>
+     * @var list<string>
      */
     private static array $directories = [];
     private static bool $initialized  = false;
+    private readonly bool $enabled;
 
     /**
-     * @psalm-param non-empty-string $directory
+     * @param non-empty-string $directory
      *
      * @throws InvalidDirectoryException
      */
@@ -153,8 +162,17 @@ final class ExcludeList
         self::$directories[] = realpath($directory);
     }
 
+    public function __construct(?bool $enabled = null)
+    {
+        if ($enabled === null) {
+            $enabled = !defined('PHPUNIT_TESTSUITE');
+        }
+
+        $this->enabled = $enabled;
+    }
+
     /**
-     * @psalm-return list<string>
+     * @return list<string>
      */
     public function getExcludedDirectories(): array
     {
@@ -165,7 +183,7 @@ final class ExcludeList
 
     public function isExcluded(string $file): bool
     {
-        if (defined('PHPUNIT_TESTSUITE')) {
+        if (!$this->enabled) {
             return false;
         }
 
@@ -200,11 +218,16 @@ final class ExcludeList
             self::$directories[] = $directory;
         }
 
-        // Hide process isolation workaround on Windows.
-        if (DIRECTORY_SEPARATOR === '\\') {
-            // tempnam() prefix is limited to first 3 chars.
-            // @see https://php.net/manual/en/function.tempnam.php
+        /**
+         * Hide process isolation workaround on Windows:
+         * tempnam() prefix is limited to first 3 characters.
+         *
+         * @see https://php.net/manual/en/function.tempnam.php
+         */
+        if (PHP_OS_FAMILY === 'Windows') {
+            // @codeCoverageIgnoreStart
             self::$directories[] = sys_get_temp_dir() . '\\PHP';
+            // @codeCoverageIgnoreEnd
         }
 
         self::$initialized = true;

@@ -9,14 +9,28 @@
  */
 namespace SebastianBergmann\Diff;
 
-final class Chunk
+use ArrayIterator;
+use IteratorAggregate;
+use Traversable;
+
+/**
+ * @template-implements IteratorAggregate<int, Line>
+ */
+final class Chunk implements IteratorAggregate
 {
     private int $start;
     private int $startRange;
     private int $end;
     private int $endRange;
+
+    /**
+     * @var list<Line>
+     */
     private array $lines;
 
+    /**
+     * @param list<Line> $lines
+     */
     public function __construct(int $start = 0, int $startRange = 1, int $end = 0, int $endRange = 1, array $lines = [])
     {
         $this->start      = $start;
@@ -26,36 +40,36 @@ final class Chunk
         $this->lines      = $lines;
     }
 
-    public function getStart(): int
+    public function start(): int
     {
         return $this->start;
     }
 
-    public function getStartRange(): int
+    public function startRange(): int
     {
         return $this->startRange;
     }
 
-    public function getEnd(): int
+    public function end(): int
     {
         return $this->end;
     }
 
-    public function getEndRange(): int
+    public function endRange(): int
     {
         return $this->endRange;
     }
 
     /**
-     * @psalm-return list<Line>
+     * @return list<Line>
      */
-    public function getLines(): array
+    public function lines(): array
     {
         return $this->lines;
     }
 
     /**
-     * @psalm-param list<Line> $lines
+     * @param list<Line> $lines
      */
     public function setLines(array $lines): void
     {
@@ -66,5 +80,10 @@ final class Chunk
         }
 
         $this->lines = $lines;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->lines);
     }
 }

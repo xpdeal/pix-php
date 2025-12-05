@@ -10,14 +10,21 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Group extends Metadata
+final readonly class Group extends Metadata
 {
-    private readonly string $groupName;
+    /**
+     * @var non-empty-string
+     */
+    private string $groupName;
 
+    /**
+     * @param 0|1              $level
+     * @param non-empty-string $groupName
+     */
     protected function __construct(int $level, string $groupName)
     {
         parent::__construct($level);
@@ -25,11 +32,14 @@ final class Group extends Metadata
         $this->groupName = $groupName;
     }
 
-    public function isGroup(): bool
+    public function isGroup(): true
     {
         return true;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function groupName(): string
     {
         return $this->groupName;

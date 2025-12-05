@@ -10,30 +10,28 @@
 namespace PHPUnit\Event\Code;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Phpt extends Test
+final readonly class Phpt extends Test
 {
-    public function __construct(string $file)
-    {
-        parent::__construct($file);
-    }
-
-    /**
-     * @psalm-assert-if-true Phpt $this
-     */
-    public function isPhpt(): bool
+    public function isPhpt(): true
     {
         return true;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function id(): string
     {
         return $this->file();
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function name(): string
     {
         return $this->file();

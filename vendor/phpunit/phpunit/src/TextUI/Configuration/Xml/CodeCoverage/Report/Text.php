@@ -12,15 +12,17 @@ namespace PHPUnit\TextUI\XmlConfiguration\CodeCoverage\Report;
 use PHPUnit\TextUI\Configuration\File;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class Text
+final readonly class Text
 {
-    private readonly File $target;
-    private readonly bool $showUncoveredFiles;
-    private readonly bool $showOnlySummary;
+    private File $target;
+    private bool $showUncoveredFiles;
+    private bool $showOnlySummary;
 
     public function __construct(File $target, bool $showUncoveredFiles, bool $showOnlySummary)
     {

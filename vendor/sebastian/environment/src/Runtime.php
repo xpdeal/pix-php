@@ -10,36 +10,63 @@
 namespace SebastianBergmann\Environment;
 
 use const PHP_BINARY;
-use const PHP_BINDIR;
-use const PHP_MAJOR_VERSION;
 use const PHP_SAPI;
 use const PHP_VERSION;
 use function array_map;
 use function array_merge;
+use function assert;
 use function escapeshellarg;
 use function explode;
 use function extension_loaded;
+use function in_array;
 use function ini_get;
-use function is_readable;
+use function is_array;
 use function parse_ini_file;
 use function php_ini_loaded_file;
 use function php_ini_scanned_files;
 use function phpversion;
 use function sprintf;
-use function strpos;
+use function strrpos;
+use function version_compare;
+use function xdebug_info;
 
 final class Runtime
 {
-    private static string $binary;
-    private static bool $initialized = false;
-
     /**
      * Returns true when Xdebug or PCOV is available or
      * the runtime used is PHPDBG.
      */
     public function canCollectCodeCoverage(): bool
     {
-        return $this->hasXdebug() || $this->hasPCOV() || $this->hasPHPDBGCodeCoverage();
+        if ($this->hasPHPDBGCodeCoverage()) {
+            return true;
+        }
+
+        if ($this->hasPCOV()) {
+            return true;
+        }
+
+        if (!$this->hasXdebug()) {
+            return false;
+        }
+
+        $xdebugVersion = phpversion('xdebug');
+
+        assert($xdebugVersion !== false);
+
+        if (version_compare($xdebugVersion, '3', '<')) {
+            return true;
+        }
+
+        $xdebugMode = xdebug_info('mode');
+
+        assert(is_array($xdebugMode));
+
+        if (in_array('coverage', $xdebugMode, true)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -65,15 +92,21 @@ final class Runtime
      */
     public function performsJustInTimeCompilation(): bool
     {
-        if (PHP_MAJOR_VERSION < 8) {
-            return false;
-        }
-
         if (!$this->isOpcacheActive()) {
             return false;
         }
 
-        if (strpos(ini_get('opcache.jit'), '0') === 0) {
+        if (ini_get('opcache.jit_buffer_size') === '0') {
+            return false;
+        }
+
+        $jit = (string) ini_get('opcache.jit');
+
+        if (($jit === 'disable') || ($jit === 'off')) {
+            return false;
+        }
+
+        if (strrpos($jit, '0') === 3) {
             return false;
         }
 
@@ -81,43 +114,23 @@ final class Runtime
     }
 
     /**
-     * Returns the path to the binary of the current runtime.
+     * Returns the raw path to the binary of the current runtime.
+     *
+     * @deprecated
+     */
+    public function getRawBinary(): string
+    {
+        return PHP_BINARY;
+    }
+
+    /**
+     * Returns the escaped path to the binary of the current runtime.
+     *
+     * @deprecated
      */
     public function getBinary(): string
     {
-        if (self::$initialized) {
-            return self::$binary;
-        }
-
-        if (PHP_BINARY !== '') {
-            self::$binary      = escapeshellarg(PHP_BINARY);
-            self::$initialized = true;
-
-            return self::$binary;
-        }
-
-        // @codeCoverageIgnoreStart
-        $possibleBinaryLocations = [
-            PHP_BINDIR . '/php',
-            PHP_BINDIR . '/php-cli.exe',
-            PHP_BINDIR . '/php.exe',
-        ];
-
-        foreach ($possibleBinaryLocations as $binary) {
-            if (is_readable($binary)) {
-                self::$binary      = escapeshellarg($binary);
-                self::$initialized = true;
-
-                return self::$binary;
-            }
-        }
-
-        // @codeCoverageIgnoreStart
-        self::$binary      = 'php';
-        self::$initialized = true;
-        // @codeCoverageIgnoreEnd
-
-        return self::$binary;
+        return escapeshellarg(PHP_BINARY);
     }
 
     public function getNameWithVersion(): string
@@ -131,7 +144,7 @@ final class Runtime
             return sprintf(
                 '%s with PCOV %s',
                 $this->getNameWithVersion(),
-                phpversion('pcov')
+                phpversion('pcov'),
             );
         }
 
@@ -139,7 +152,7 @@ final class Runtime
             return sprintf(
                 '%s with Xdebug %s',
                 $this->getNameWithVersion(),
-                phpversion('xdebug')
+                phpversion('xdebug'),
             );
         }
 
@@ -218,7 +231,9 @@ final class Runtime
      * where each string has the format `key=value` denoting
      * the name of a changed php.ini setting with its new value.
      *
-     * @return string[]
+     * @param list<string> $values
+     *
+     * @return array<string, string>
      */
     public function getCurrentSettings(array $values): array
     {
@@ -234,8 +249,8 @@ final class Runtime
                 $files,
                 array_map(
                     'trim',
-                    explode(",\n", $scanned)
-                )
+                    explode(",\n", $scanned),
+                ),
             );
         }
 

@@ -15,9 +15,11 @@ use function date;
 use function dirname;
 use function str_ends_with;
 use SebastianBergmann\CodeCoverage\CodeCoverage;
+use SebastianBergmann\CodeCoverage\FileCouldNotBeWrittenException;
 use SebastianBergmann\CodeCoverage\Node\Directory as DirectoryNode;
 use SebastianBergmann\CodeCoverage\Report\Thresholds;
 use SebastianBergmann\CodeCoverage\Util\Filesystem;
+use SebastianBergmann\Template\Exception;
 use SebastianBergmann\Template\Template;
 
 final class Facade
@@ -48,7 +50,7 @@ final class Facade
             $this->generator,
             $date,
             $this->thresholds,
-            $coverage->collectsBranchAndPathCoverage()
+            $coverage->collectsBranchAndPathCoverage(),
         );
 
         $directory = new Directory(
@@ -56,7 +58,7 @@ final class Facade
             $this->generator,
             $date,
             $this->thresholds,
-            $coverage->collectsBranchAndPathCoverage()
+            $coverage->collectsBranchAndPathCoverage(),
         );
 
         $file = new File(
@@ -64,7 +66,7 @@ final class Facade
             $this->generator,
             $date,
             $this->thresholds,
-            $coverage->collectsBranchAndPathCoverage()
+            $coverage->collectsBranchAndPathCoverage(),
         );
 
         $directory->render($report, $target . 'index.html');
@@ -105,8 +107,7 @@ final class Facade
         copy($this->templatePath . 'icons/file-directory.svg', $dir . 'file-directory.svg');
 
         $dir = $this->directory($target . '_js');
-        copy($this->templatePath . 'js/bootstrap.min.js', $dir . 'bootstrap.min.js');
-        copy($this->templatePath . 'js/popper.min.js', $dir . 'popper.min.js');
+        copy($this->templatePath . 'js/bootstrap.bundle.min.js', $dir . 'bootstrap.bundle.min.js');
         copy($this->templatePath . 'js/d3.min.js', $dir . 'd3.min.js');
         copy($this->templatePath . 'js/jquery.min.js', $dir . 'jquery.min.js');
         copy($this->templatePath . 'js/nv.d3.min.js', $dir . 'nv.d3.min.js');
@@ -124,10 +125,18 @@ final class Facade
                 'success-high'   => $this->colors->successHigh(),
                 'warning'        => $this->colors->warning(),
                 'danger'         => $this->colors->danger(),
-            ]
+            ],
         );
 
-        $template->renderTo($this->directory($target . '_css') . 'style.css');
+        try {
+            $template->renderTo($this->directory($target . '_css') . 'style.css');
+        } catch (Exception $e) {
+            throw new FileCouldNotBeWrittenException(
+                $e->getMessage(),
+                $e->getCode(),
+                $e,
+            );
+        }
     }
 
     private function directory(string $directory): string

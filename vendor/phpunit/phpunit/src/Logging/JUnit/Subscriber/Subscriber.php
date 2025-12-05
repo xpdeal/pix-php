@@ -10,11 +10,13 @@
 namespace PHPUnit\Logging\JUnit;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-abstract class Subscriber
+abstract readonly class Subscriber
 {
-    private readonly JunitXmlLogger $logger;
+    private JunitXmlLogger $logger;
 
     public function __construct(JunitXmlLogger $logger)
     {

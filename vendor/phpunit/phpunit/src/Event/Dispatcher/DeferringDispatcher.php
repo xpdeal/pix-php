@@ -10,6 +10,8 @@
 namespace PHPUnit\Event;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class DeferringDispatcher implements SubscribableDispatcher
@@ -32,14 +34,6 @@ final class DeferringDispatcher implements SubscribableDispatcher
     public function registerSubscriber(Subscriber $subscriber): void
     {
         $this->dispatcher->registerSubscriber($subscriber);
-    }
-
-    /**
-     * @psalm-param class-string $className
-     */
-    public function hasSubscriberFor(string $className): bool
-    {
-        return $this->dispatcher->hasSubscriberFor($className);
     }
 
     public function dispatch(Event $event): void

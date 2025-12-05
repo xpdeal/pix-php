@@ -12,13 +12,15 @@ namespace PHPUnit\TextUI\XmlConfiguration\Logging\TestDox;
 use PHPUnit\TextUI\Configuration\File;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class Text
+final readonly class Text
 {
-    private readonly File $target;
+    private File $target;
 
     public function __construct(File $target)
     {

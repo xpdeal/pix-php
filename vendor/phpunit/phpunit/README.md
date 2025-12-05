@@ -1,10 +1,7 @@
-<h1 align="center">🇺🇦 <a href="https://phpunit.de/stand-with-ukraine.html">UKRAINE NEEDS YOUR HELP NOW!</a></h1>
-
 # PHPUnit
 
-[![Latest Stable Version](https://poser.pugx.org/phpunit/phpunit/v/stable.png)](https://packagist.org/packages/phpunit/phpunit)
+[![Latest Stable Version](https://poser.pugx.org/phpunit/phpunit/v)](https://packagist.org/packages/phpunit/phpunit)
 [![CI Status](https://github.com/sebastianbergmann/phpunit/workflows/CI/badge.svg)](https://github.com/sebastianbergmann/phpunit/actions)
-[![Type Coverage](https://shepherd.dev/github/sebastianbergmann/phpunit/coverage.svg)](https://shepherd.dev/github/sebastianbergmann/phpunit)
 [![codecov](https://codecov.io/gh/sebastianbergmann/phpunit/branch/main/graph/badge.svg)](https://codecov.io/gh/sebastianbergmann/phpunit)
 
 PHPUnit is a programmer-oriented testing framework for PHP. It is an instance of the xUnit architecture for unit testing frameworks.
@@ -21,7 +18,7 @@ $ php phpunit-X.Y.phar --version
 
 Please replace `X.Y` with the version of PHPUnit you are interested in.
 
-Alternatively, you may use [Composer](https://getcomposer.org/) to download and install PHPUnit as well as its dependencies. Please refer to the "[Getting Started](https://phpunit.de/getting-started-with-phpunit.html)" guide for details on how to install PHPUnit.
+Alternatively, you may use [Composer](https://getcomposer.org/) to download and install PHPUnit as well as its dependencies. Please refer to the [documentation](https://phpunit.de/documentation.html) for details on how to install PHPUnit.
 
 ## Contribute
 

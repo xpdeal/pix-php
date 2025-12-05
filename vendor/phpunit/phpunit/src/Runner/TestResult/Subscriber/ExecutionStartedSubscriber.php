@@ -13,9 +13,11 @@ use PHPUnit\Event\TestRunner\ExecutionStarted;
 use PHPUnit\Event\TestRunner\ExecutionStartedSubscriber as TestRunnerExecutionStartedSubscriber;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class ExecutionStartedSubscriber extends Subscriber implements TestRunnerExecutionStartedSubscriber
+final readonly class ExecutionStartedSubscriber extends Subscriber implements TestRunnerExecutionStartedSubscriber
 {
     public function notify(ExecutionStarted $event): void
     {

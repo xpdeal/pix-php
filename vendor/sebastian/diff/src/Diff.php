@@ -9,18 +9,34 @@
  */
 namespace SebastianBergmann\Diff;
 
-final class Diff
+use ArrayIterator;
+use IteratorAggregate;
+use Traversable;
+
+/**
+ * @template-implements IteratorAggregate<int, Chunk>
+ */
+final class Diff implements IteratorAggregate
 {
+    /**
+     * @var non-empty-string
+     */
     private string $from;
+
+    /**
+     * @var non-empty-string
+     */
     private string $to;
 
     /**
-     * @psalm-var list<Chunk>
+     * @var list<Chunk>
      */
     private array $chunks;
 
     /**
-     * @psalm-param list<Chunk> $chunks
+     * @param non-empty-string $from
+     * @param non-empty-string $to
+     * @param list<Chunk>      $chunks
      */
     public function __construct(string $from, string $to, array $chunks = [])
     {
@@ -29,29 +45,40 @@ final class Diff
         $this->chunks = $chunks;
     }
 
-    public function getFrom(): string
+    /**
+     * @return non-empty-string
+     */
+    public function from(): string
     {
         return $this->from;
     }
 
-    public function getTo(): string
+    /**
+     * @return non-empty-string
+     */
+    public function to(): string
     {
         return $this->to;
     }
 
     /**
-     * @psalm-return list<Chunk>
+     * @return list<Chunk>
      */
-    public function getChunks(): array
+    public function chunks(): array
     {
         return $this->chunks;
     }
 
     /**
-     * @psalm-param list<Chunk> $chunks
+     * @param list<Chunk> $chunks
      */
     public function setChunks(array $chunks): void
     {
         $this->chunks = $chunks;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->chunks);
     }
 }

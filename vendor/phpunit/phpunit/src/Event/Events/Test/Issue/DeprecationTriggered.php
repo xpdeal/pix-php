@@ -10,31 +10,65 @@
 namespace PHPUnit\Event\Test;
 
 use const PHP_EOL;
+use function implode;
 use function sprintf;
+use PHPUnit\Event\Code\IssueTrigger\IssueTrigger;
 use PHPUnit\Event\Code\Test;
 use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class DeprecationTriggered implements Event
+final readonly class DeprecationTriggered implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
-    private readonly Test $test;
-    private readonly string $message;
-    private readonly string $file;
-    private readonly int $line;
+    private Telemetry\Info $telemetryInfo;
+    private Test $test;
 
-    public function __construct(Telemetry\Info $telemetryInfo, Test $test, string $message, string $file, int $line)
+    /**
+     * @var non-empty-string
+     */
+    private string $message;
+
+    /**
+     * @var non-empty-string
+     */
+    private string $file;
+
+    /**
+     * @var positive-int
+     */
+    private int $line;
+    private bool $suppressed;
+    private bool $ignoredByBaseline;
+    private bool $ignoredByTest;
+    private IssueTrigger $trigger;
+
+    /**
+     * @var non-empty-string
+     */
+    private string $stackTrace;
+
+    /**
+     * @param non-empty-string $message
+     * @param non-empty-string $file
+     * @param positive-int     $line
+     * @param non-empty-string $stackTrace
+     */
+    public function __construct(Telemetry\Info $telemetryInfo, Test $test, string $message, string $file, int $line, bool $suppressed, bool $ignoredByBaseline, bool $ignoredByTest, IssueTrigger $trigger, string $stackTrace)
     {
-        $this->telemetryInfo = $telemetryInfo;
-        $this->test          = $test;
-        $this->message       = $message;
-        $this->file          = $file;
-        $this->line          = $line;
+        $this->telemetryInfo     = $telemetryInfo;
+        $this->test              = $test;
+        $this->message           = $message;
+        $this->file              = $file;
+        $this->line              = $line;
+        $this->suppressed        = $suppressed;
+        $this->ignoredByBaseline = $ignoredByBaseline;
+        $this->ignoredByTest     = $ignoredByTest;
+        $this->trigger           = $trigger;
+        $this->stackTrace        = $stackTrace;
     }
 
     public function telemetryInfo(): Telemetry\Info
@@ -47,19 +81,56 @@ final class DeprecationTriggered implements Event
         return $this->test;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function message(): string
     {
         return $this->message;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function file(): string
     {
         return $this->file;
     }
 
+    /**
+     * @return positive-int
+     */
     public function line(): int
     {
         return $this->line;
+    }
+
+    public function wasSuppressed(): bool
+    {
+        return $this->suppressed;
+    }
+
+    public function ignoredByBaseline(): bool
+    {
+        return $this->ignoredByBaseline;
+    }
+
+    public function ignoredByTest(): bool
+    {
+        return $this->ignoredByTest;
+    }
+
+    public function trigger(): IssueTrigger
+    {
+        return $this->trigger;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function stackTrace(): string
+    {
+        return $this->stackTrace;
     }
 
     public function asString(): string
@@ -70,10 +141,26 @@ final class DeprecationTriggered implements Event
             $message = PHP_EOL . $message;
         }
 
+        $details = [$this->test->id(), $this->trigger->asString()];
+
+        if ($this->suppressed) {
+            $details[] = 'suppressed using operator';
+        }
+
+        if ($this->ignoredByTest) {
+            $details[] = 'ignored by test';
+        }
+
+        if ($this->ignoredByBaseline) {
+            $details[] = 'ignored by baseline';
+        }
+
         return sprintf(
-            'Test Triggered Deprecation (%s)%s',
-            $this->test->id(),
-            $message
+            'Test Triggered Deprecation (%s) in %s:%d%s',
+            implode(', ', $details),
+            $this->file,
+            $this->line,
+            $message,
         );
     }
 }

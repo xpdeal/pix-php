@@ -9,10 +9,13 @@
  */
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
+use function assert;
 use DOMElement;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
+ *
+ * @phpstan-import-type TestType from \SebastianBergmann\CodeCoverage\CodeCoverage
  */
 final class Tests
 {
@@ -23,14 +26,19 @@ final class Tests
         $this->contextNode = $context;
     }
 
+    /**
+     * @param TestType $result
+     */
     public function addTest(string $test, array $result): void
     {
         $node = $this->contextNode->appendChild(
             $this->contextNode->ownerDocument->createElementNS(
                 'https://schema.phpunit.de/coverage/1.0',
-                'test'
-            )
+                'test',
+            ),
         );
+
+        assert($node instanceof DOMElement);
 
         $node->setAttribute('name', $test);
         $node->setAttribute('size', $result['size']);

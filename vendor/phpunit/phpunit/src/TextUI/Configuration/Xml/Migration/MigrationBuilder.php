@@ -9,14 +9,14 @@
  */
 namespace PHPUnit\TextUI\XmlConfiguration;
 
-use function array_key_exists;
-use function sprintf;
 use function version_compare;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class MigrationBuilder
+final readonly class MigrationBuilder
 {
     private const AVAILABLE_MIGRATIONS = [
         '8.5' => [
@@ -28,7 +28,7 @@ final class MigrationBuilder
             IntroduceCoverageElement::class,
             MoveAttributesFromRootToCoverage::class,
             MoveAttributesFromFilterWhitelistToCoverage::class,
-            MoveWhitelistDirectoriesToCoverage::class,
+            MoveWhitelistIncludesToCoverage::class,
             MoveWhitelistExcludesToCoverage::class,
             RemoveEmptyFilter::class,
             CoverageCloverToReport::class,
@@ -59,22 +59,38 @@ final class MigrationBuilder
             RemoveLoggingElements::class,
             RemoveTestDoxGroupsElement::class,
         ],
+
+        '10.0' => [
+            MoveCoverageDirectoriesToSource::class,
+        ],
+
+        '10.4' => [
+            RemoveBeStrictAboutTodoAnnotatedTestsAttribute::class,
+        ],
+
+        '10.5' => [
+            RemoveRegisterMockObjectsFromTestArgumentsRecursivelyAttribute::class,
+        ],
+
+        '11.0' => [
+            ReplaceRestrictDeprecationsWithIgnoreDeprecations::class,
+        ],
+
+        '11.1' => [
+            RemoveCacheResultFileAttribute::class,
+            RemoveCoverageElementCacheDirectoryAttribute::class,
+        ],
+
+        '11.2' => [
+            RemoveBeStrictAboutTodoAnnotatedTestsAttribute::class,
+        ],
     ];
 
     /**
-     * @throws MigrationBuilderException
+     * @return non-empty-list<Migration>
      */
     public function build(string $fromVersion): array
     {
-        if (!array_key_exists($fromVersion, self::AVAILABLE_MIGRATIONS)) {
-            throw new MigrationBuilderException(
-                sprintf(
-                    'Migration from schema version %s is not supported',
-                    $fromVersion
-                )
-            );
-        }
-
         $stack = [new UpdateSchemaLocation];
 
         foreach (self::AVAILABLE_MIGRATIONS as $version => $migrations) {

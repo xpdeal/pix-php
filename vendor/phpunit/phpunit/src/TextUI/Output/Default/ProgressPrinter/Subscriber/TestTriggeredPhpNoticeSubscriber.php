@@ -13,12 +13,14 @@ use PHPUnit\Event\Test\PhpNoticeTriggered;
 use PHPUnit\Event\Test\PhpNoticeTriggeredSubscriber;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class TestTriggeredPhpNoticeSubscriber extends Subscriber implements PhpNoticeTriggeredSubscriber
+final readonly class TestTriggeredPhpNoticeSubscriber extends Subscriber implements PhpNoticeTriggeredSubscriber
 {
     public function notify(PhpNoticeTriggered $event): void
     {
-        $this->printer()->testTriggeredNotice();
+        $this->printer()->testTriggeredPhpNotice($event);
     }
 }

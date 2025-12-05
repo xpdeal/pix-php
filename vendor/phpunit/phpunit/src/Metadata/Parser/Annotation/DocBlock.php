@@ -34,23 +34,21 @@ use ReflectionMethod;
  * allowing us to ask meaningful questions about a specific
  * reflection symbol.
  *
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class DocBlock
 {
-    private const REGEX_REQUIRES_VERSION = '/@requires\s+(?P<name>PHP(?:Unit)?)\s+(?P<operator>[<>=!]{0,2})\s*(?P<version>[\d\.-]+(dev|(RC|alpha|beta)[\d\.])?)[ \t]*\r?$/m';
-
+    private const REGEX_REQUIRES_VERSION            = '/@requires\s+(?P<name>PHP(?:Unit)?)\s+(?P<operator>[<>=!]{0,2})\s*(?P<version>[\d\.-]+(dev|(RC|alpha|beta)[\d\.])?)[ \t]*\r?$/m';
     private const REGEX_REQUIRES_VERSION_CONSTRAINT = '/@requires\s+(?P<name>PHP(?:Unit)?)\s+(?P<constraint>[\d\t \-.|~^]+)[ \t]*\r?$/m';
-
-    private const REGEX_REQUIRES_OS = '/@requires\s+(?P<name>OS(?:FAMILY)?)\s+(?P<value>.+?)[ \t]*\r?$/m';
-
-    private const REGEX_REQUIRES_SETTING = '/@requires\s+(?P<name>setting)\s+(?P<setting>([^ ]+?))\s*(?P<value>[\w\.-]+[\w\.]?)?[ \t]*\r?$/m';
-
-    private const REGEX_REQUIRES = '/@requires\s+(?P<name>function|extension)\s+(?P<value>([^\s<>=!]+))\s*(?P<operator>[<>=!]{0,2})\s*(?P<version>[\d\.-]+[\d\.]?)?[ \t]*\r?$/m';
+    private const REGEX_REQUIRES_OS                 = '/@requires\s+(?P<name>OS(?:FAMILY)?)\s+(?P<value>.+?)[ \t]*\r?$/m';
+    private const REGEX_REQUIRES_SETTING            = '/@requires\s+(?P<name>setting)\s+(?P<setting>([^ ]+?))\s*(?P<value>[\w\.-]+[\w\.]?)?[ \t]*\r?$/m';
+    private const REGEX_REQUIRES                    = '/@requires\s+(?P<name>function|extension)\s+(?P<value>([^\s<>=!]+))\s*(?P<operator>[<>=!]{0,2})\s*(?P<version>[\d\.-]+[\d\.]?)?[ \t]*\r?$/m';
     private readonly string $docComment;
 
     /**
-     * @psalm-var array<string, array<int, string>> pre-parsed annotations indexed by name and occurrence index
+     * @var array<string, array<int, string>> pre-parsed annotations indexed by name and occurrence index
      */
     private readonly array $symbolAnnotations;
 
@@ -63,6 +61,8 @@ final class DocBlock
      *   string,
      *   string|array{version: string, operator: string}|array{constraint: string}|array<int|string, string>
      * >)
+     *
+     * @phpstan-ignore missingType.iterableValue
      */
     private ?array $parsedRequirements = null;
     private readonly int $startLine;
@@ -70,6 +70,8 @@ final class DocBlock
 
     /**
      * @throws AnnotationsAreNotSupportedForInternalClassesException
+     *
+     * @phpstan-ignore missingType.generics
      */
     public static function ofClass(ReflectionClass $class): self
     {
@@ -124,6 +126,8 @@ final class DocBlock
      *   string,
      *   string|array{version: string, operator: string}|array{constraint: string}|array<int|string, string>
      * >
+     *
+     * @phpstan-ignore missingType.iterableValue
      */
     public function requirements(): array
     {
@@ -177,7 +181,7 @@ final class DocBlock
                     throw new InvalidVersionRequirementException(
                         $e->getMessage(),
                         $e->getCode(),
-                        $e
+                        $e,
                     );
                 }
             }
@@ -215,18 +219,21 @@ final class DocBlock
                 [
                     'setting'            => $recordedSettings,
                     'extension_versions' => $extensionVersions,
-                ]
-            )
+                ],
+            ),
         );
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function symbolAnnotations(): array
     {
         return $this->symbolAnnotations;
     }
 
     /**
-     * @psalm-return array<string, array<int, string>>
+     * @return array<string, array<int, string>>
      */
     private static function parseDocBlock(string $docBlock): array
     {
@@ -245,6 +252,9 @@ final class DocBlock
         return $annotations;
     }
 
+    /**
+     * @phpstan-ignore missingType.iterableValue, missingType.generics
+     */
     private static function extractAnnotationsFromReflector(ReflectionClass|ReflectionFunctionAbstract $reflector): array
     {
         $annotations = [];
@@ -254,14 +264,14 @@ final class DocBlock
                 $annotations,
                 ...array_map(
                     static fn (ReflectionClass $trait): array => self::parseDocBlock((string) $trait->getDocComment()),
-                    array_values($reflector->getTraits())
-                )
+                    array_values($reflector->getTraits()),
+                ),
             );
         }
 
         return array_merge(
             $annotations,
-            self::parseDocBlock((string) $reflector->getDocComment())
+            self::parseDocBlock((string) $reflector->getDocComment()),
         );
     }
 }

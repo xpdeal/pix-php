@@ -9,6 +9,7 @@
  */
 namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
+use function assert;
 use function phpversion;
 use DateTimeImmutable;
 use DOMElement;
@@ -62,17 +63,19 @@ final class BuildInformation
     {
         $node = $this->contextNode->getElementsByTagNameNS(
             'https://schema.phpunit.de/coverage/1.0',
-            $name
+            $name,
         )->item(0);
 
         if (!$node) {
             $node = $this->contextNode->appendChild(
                 $this->contextNode->ownerDocument->createElementNS(
                     'https://schema.phpunit.de/coverage/1.0',
-                    $name
-                )
+                    $name,
+                ),
             );
         }
+
+        assert($node instanceof DOMElement);
 
         return $node;
     }

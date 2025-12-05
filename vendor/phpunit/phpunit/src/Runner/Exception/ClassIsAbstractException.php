@@ -13,6 +13,8 @@ use function sprintf;
 use RuntimeException;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class ClassIsAbstractException extends RuntimeException implements Exception
@@ -23,8 +25,8 @@ final class ClassIsAbstractException extends RuntimeException implements Excepti
             sprintf(
                 'Class %s declared in %s is abstract',
                 $className,
-                $file
-            )
+                $file,
+            ),
         );
     }
 }

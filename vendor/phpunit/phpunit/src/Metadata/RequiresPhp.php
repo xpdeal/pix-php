@@ -12,14 +12,17 @@ namespace PHPUnit\Metadata;
 use PHPUnit\Metadata\Version\Requirement;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class RequiresPhp extends Metadata
+final readonly class RequiresPhp extends Metadata
 {
-    private readonly Requirement $versionRequirement;
+    private Requirement $versionRequirement;
 
+    /**
+     * @param 0|1 $level
+     */
     protected function __construct(int $level, Requirement $versionRequirement)
     {
         parent::__construct($level);
@@ -27,7 +30,7 @@ final class RequiresPhp extends Metadata
         $this->versionRequirement = $versionRequirement;
     }
 
-    public function isRequiresPhp(): bool
+    public function isRequiresPhp(): true
     {
         return true;
     }

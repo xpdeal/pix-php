@@ -12,17 +12,19 @@ namespace PHPUnit\Runner\ResultCache;
 use PHPUnit\Framework\TestStatus\TestStatus;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 interface ResultCache
 {
-    public function setStatus(string $id, TestStatus $status): void;
+    public function setStatus(ResultCacheId $id, TestStatus $status): void;
 
-    public function status(string $id): TestStatus;
+    public function status(ResultCacheId $id): TestStatus;
 
-    public function setTime(string $id, float $time): void;
+    public function setTime(ResultCacheId $id, float $time): void;
 
-    public function time(string $id): float;
+    public function time(ResultCacheId $id): float;
 
     public function load(): void;
 

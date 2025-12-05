@@ -10,11 +10,13 @@
 namespace PHPUnit\Runner\ResultCache;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-abstract class Subscriber
+abstract readonly class Subscriber
 {
-    private readonly ResultCacheHandler $handler;
+    private ResultCacheHandler $handler;
 
     public function __construct(ResultCacheHandler $handler)
     {

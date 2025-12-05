@@ -10,14 +10,21 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Covers extends Metadata
+final readonly class Covers extends Metadata
 {
-    private readonly string $target;
+    /**
+     * @var non-empty-string
+     */
+    private string $target;
 
+    /**
+     * @param 0|1              $level
+     * @param non-empty-string $target
+     */
     protected function __construct(int $level, string $target)
     {
         parent::__construct($level);
@@ -25,11 +32,14 @@ final class Covers extends Metadata
         $this->target = $target;
     }
 
-    public function isCovers(): bool
+    public function isCovers(): true
     {
         return true;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function target(): string
     {
         return $this->target;

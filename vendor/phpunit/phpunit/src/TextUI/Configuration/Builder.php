@@ -18,10 +18,14 @@ use PHPUnit\TextUI\XmlConfiguration\Loader;
 
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
+ * @codeCoverageIgnore
  */
-final class Builder
+final readonly class Builder
 {
     /**
+     * @param list<string> $argv
+     *
      * @throws ConfigurationCannotBeBuiltException
      */
     public function build(array $argv): Configuration
@@ -31,19 +35,19 @@ final class Builder
             $configurationFile = (new XmlConfigurationFileFinder)->find($cliConfiguration);
             $xmlConfiguration  = DefaultConfiguration::create();
 
-            if ($configurationFile) {
+            if ($configurationFile !== false) {
                 $xmlConfiguration = (new Loader)->load($configurationFile);
             }
 
             return Registry::init(
                 $cliConfiguration,
-                $xmlConfiguration
+                $xmlConfiguration,
             );
         } catch (CliConfigurationException|XmlConfigurationException $e) {
             throw new ConfigurationCannotBeBuiltException(
                 $e->getMessage(),
                 $e->getCode(),
-                $e
+                $e,
             );
         }
     }

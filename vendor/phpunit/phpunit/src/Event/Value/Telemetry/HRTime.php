@@ -13,14 +13,14 @@ use function sprintf;
 use PHPUnit\Event\InvalidArgumentException;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class HRTime
+final readonly class HRTime
 {
-    private readonly int $seconds;
-    private readonly int $nanoseconds;
+    private int $seconds;
+    private int $nanoseconds;
 
     /**
      * @throws InvalidArgumentException
@@ -29,7 +29,7 @@ final class HRTime
     {
         return new self(
             $seconds,
-            $nanoseconds
+            $nanoseconds,
         );
     }
 
@@ -56,9 +56,6 @@ final class HRTime
         return $this->nanoseconds;
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function duration(self $start): Duration
     {
         $seconds     = $this->seconds - $start->seconds();
@@ -71,12 +68,12 @@ final class HRTime
         }
 
         if ($seconds < 0) {
-            throw new InvalidArgumentException('Start needs to be smaller.');
+            return Duration::fromSecondsAndNanoseconds(0, 0);
         }
 
         return Duration::fromSecondsAndNanoseconds(
             $seconds,
-            $nanoseconds
+            $nanoseconds,
         );
     }
 
@@ -89,8 +86,8 @@ final class HRTime
             throw new InvalidArgumentException(
                 sprintf(
                     'Value for %s must not be negative.',
-                    $type
-                )
+                    $type,
+                ),
             );
         }
     }
@@ -102,7 +99,7 @@ final class HRTime
     {
         if ($nanoseconds > 999999999) {
             throw new InvalidArgumentException(
-                'Value for nanoseconds must not be greater than 999999999.'
+                'Value for nanoseconds must not be greater than 999999999.',
             );
         }
     }

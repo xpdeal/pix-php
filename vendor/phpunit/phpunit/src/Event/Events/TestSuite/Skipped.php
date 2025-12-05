@@ -14,15 +14,15 @@ use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class Skipped implements Event
+final readonly class Skipped implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
-    private readonly TestSuite $testSuite;
-    private readonly string $message;
+    private Telemetry\Info $telemetryInfo;
+    private TestSuite $testSuite;
+    private string $message;
 
     public function __construct(Telemetry\Info $telemetryInfo, TestSuite $testSuite, string $message)
     {
@@ -48,16 +48,10 @@ final class Skipped implements Event
 
     public function asString(): string
     {
-        $name = '';
-
-        if (!empty($this->testSuite->name())) {
-            $name = $this->testSuite->name() . ', ';
-        }
-
         return sprintf(
-            'Test Suite Skipped (%s%s)',
-            $name,
-            $this->message
+            'Test Suite Skipped (%s, %s)',
+            $this->testSuite->name(),
+            $this->message,
         );
     }
 }

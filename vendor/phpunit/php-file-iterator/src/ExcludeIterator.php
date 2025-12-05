@@ -21,12 +21,12 @@ use SplFileInfo;
 final class ExcludeIterator extends RecursiveFilterIterator
 {
     /**
-     * @psalm-var list<string>
+     * @var list<string>
      */
     private array $exclude;
 
     /**
-     * @psalm-param list<string> $exclude
+     * @param list<string> $exclude
      */
     public function __construct(RecursiveDirectoryIterator $iterator, array $exclude)
     {
@@ -42,6 +42,10 @@ final class ExcludeIterator extends RecursiveFilterIterator
         assert($current instanceof SplFileInfo);
 
         $path = $current->getRealPath();
+
+        if ($path === false) {
+            return false;
+        }
 
         foreach ($this->exclude as $exclude) {
             if (str_starts_with($path, $exclude)) {
@@ -61,7 +65,7 @@ final class ExcludeIterator extends RecursiveFilterIterator
     {
         return new self(
             $this->getInnerIterator()->getChildren(),
-            $this->exclude
+            $this->exclude,
         );
     }
 

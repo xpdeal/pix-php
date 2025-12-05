@@ -17,17 +17,14 @@ use Exception;
  */
 final class ExceptionComparator extends ObjectComparator
 {
-    /**
-     * Returns whether the comparator can compare two values.
-     *
-     * @param mixed $expected The first value to compare
-     * @param mixed $actual   The second value to compare
-     */
     public function accepts(mixed $expected, mixed $actual): bool
     {
         return $expected instanceof Exception && $actual instanceof Exception;
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function toArray(object $object): array
     {
         assert($object instanceof Exception);
@@ -39,7 +36,7 @@ final class ExceptionComparator extends ObjectComparator
             $array['line'],
             $array['trace'],
             $array['string'],
-            $array['xdebug_message']
+            $array['xdebug_message'],
         );
 
         return $array;

@@ -10,26 +10,35 @@
 namespace PHPUnit\Event\Code;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-abstract class Test
+abstract readonly class Test
 {
-    private readonly string $file;
+    /**
+     * @var non-empty-string
+     */
+    private string $file;
 
+    /**
+     * @param non-empty-string $file
+     */
     public function __construct(string $file)
     {
         $this->file = $file;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function file(): string
     {
         return $this->file;
     }
 
     /**
-     * @psalm-assert-if-true TestMethod $this
+     * @phpstan-assert-if-true TestMethod $this
      */
     public function isTestMethod(): bool
     {
@@ -37,14 +46,20 @@ abstract class Test
     }
 
     /**
-     * @psalm-assert-if-true Phpt $this
+     * @phpstan-assert-if-true Phpt $this
      */
     public function isPhpt(): bool
     {
         return false;
     }
 
+    /**
+     * @return non-empty-string
+     */
     abstract public function id(): string;
 
+    /**
+     * @return non-empty-string
+     */
     abstract public function name(): string;
 }

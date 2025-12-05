@@ -18,28 +18,51 @@ use PHPUnit\TextUI\Configuration\FilterDirectoryCollection as CodeCoverageFilter
 use PHPUnit\TextUI\Configuration\GroupCollection;
 use PHPUnit\TextUI\Configuration\IniSettingCollection;
 use PHPUnit\TextUI\Configuration\Php;
+use PHPUnit\TextUI\Configuration\Source;
 use PHPUnit\TextUI\Configuration\TestSuiteCollection;
 use PHPUnit\TextUI\Configuration\VariableCollection;
 use PHPUnit\TextUI\XmlConfiguration\CodeCoverage\CodeCoverage;
 use PHPUnit\TextUI\XmlConfiguration\Logging\Logging;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
- * @psalm-immutable
+ * @immutable
  */
-final class DefaultConfiguration extends Configuration
+final readonly class DefaultConfiguration extends Configuration
 {
     public static function create(): self
     {
         return new self(
             ExtensionBootstrapCollection::fromArray([]),
-            new CodeCoverage(
+            new Source(
                 null,
+                false,
                 CodeCoverageFilterDirectoryCollection::fromArray([]),
                 FileCollection::fromArray([]),
                 CodeCoverageFilterDirectoryCollection::fromArray([]),
                 FileCollection::fromArray([]),
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                [
+                    'functions' => [],
+                    'methods'   => [],
+                ],
+                false,
+                false,
+                false,
+            ),
+            new CodeCoverage(
                 false,
                 true,
                 false,
@@ -50,17 +73,17 @@ final class DefaultConfiguration extends Configuration
                 null,
                 null,
                 null,
-                null
+                null,
             ),
             new Groups(
                 GroupCollection::fromArray([]),
-                GroupCollection::fromArray([])
+                GroupCollection::fromArray([]),
             ),
             new Logging(
                 null,
                 null,
                 null,
-                null
+                null,
             ),
             new Php(
                 DirectoryCollection::fromArray([]),
@@ -73,12 +96,11 @@ final class DefaultConfiguration extends Configuration
                 VariableCollection::fromArray([]),
                 VariableCollection::fromArray([]),
                 VariableCollection::fromArray([]),
-                VariableCollection::fromArray([])
+                VariableCollection::fromArray([]),
             ),
             new PHPUnit(
                 null,
                 true,
-                null,
                 80,
                 \PHPUnit\TextUI\Configuration\Configuration::COLOR_DEFAULT,
                 false,
@@ -90,7 +112,16 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 false,
+                false,
+                false,
                 null,
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
+                false,
                 false,
                 false,
                 false,
@@ -121,9 +152,12 @@ final class DefaultConfiguration extends Configuration
                 false,
                 false,
                 false,
-                false
+                false,
+                false,
+                100,
+                0,
             ),
-            TestSuiteCollection::fromArray([])
+            TestSuiteCollection::fromArray([]),
         );
     }
 

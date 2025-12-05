@@ -24,6 +24,8 @@ class ObjectComparator extends ArrayComparator
     }
 
     /**
+     * @param array<mixed> $processed
+     *
      * @throws ComparisonFailure
      */
     public function assertEquals(mixed $expected, mixed $actual, float $delta = 0.0, bool $canonicalize = false, bool $ignoreCase = false, array &$processed = []): void
@@ -42,8 +44,8 @@ class ObjectComparator extends ArrayComparator
                 sprintf(
                     '%s is not instance of expected class "%s".',
                     $exporter->export($actual),
-                    $expected::class
-                )
+                    $expected::class,
+                ),
             );
         }
 
@@ -66,7 +68,7 @@ class ObjectComparator extends ArrayComparator
                     $delta,
                     $canonicalize,
                     $ignoreCase,
-                    $processed
+                    $processed,
                 );
             } catch (ComparisonFailure $e) {
                 throw new ComparisonFailure(
@@ -75,12 +77,15 @@ class ObjectComparator extends ArrayComparator
                     // replace "Array" with "MyClass object"
                     substr_replace($e->getExpectedAsString(), $expected::class . ' Object', 0, 5),
                     substr_replace($e->getActualAsString(), $actual::class . ' Object', 0, 5),
-                    'Failed asserting that two objects are equal.'
+                    'Failed asserting that two objects are equal.',
                 );
             }
         }
     }
 
+    /**
+     * @return array<mixed>
+     */
     protected function toArray(object $object): array
     {
         return (new Exporter)->toArray($object);

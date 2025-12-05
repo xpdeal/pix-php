@@ -10,14 +10,31 @@
 namespace PHPUnit\Metadata;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class BeforeClass extends Metadata
+final readonly class BeforeClass extends Metadata
 {
-    public function isBeforeClass(): bool
+    private int $priority;
+
+    /**
+     * @param 0|1 $level
+     */
+    protected function __construct(int $level, int $priority)
+    {
+        parent::__construct($level);
+
+        $this->priority = $priority;
+    }
+
+    public function isBeforeClass(): true
     {
         return true;
+    }
+
+    public function priority(): int
+    {
+        return $this->priority;
     }
 }

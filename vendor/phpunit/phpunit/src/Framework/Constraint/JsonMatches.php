@@ -35,7 +35,7 @@ final class JsonMatches extends Constraint
     {
         return sprintf(
             'matches JSON string "%s"',
-            $this->value
+            $this->value,
         );
     }
 
@@ -68,7 +68,7 @@ final class JsonMatches extends Constraint
      * @throws ExpectationFailedException
      * @throws InvalidJsonException
      */
-    protected function fail(mixed $other, string $description, ComparisonFailure $comparisonFailure = null): never
+    protected function fail(mixed $other, string $description, ?ComparisonFailure $comparisonFailure = null): never
     {
         if ($comparisonFailure === null) {
             [$error, $recodedOther] = Json::canonicalize($other);
@@ -88,7 +88,7 @@ final class JsonMatches extends Constraint
                 json_decode($other),
                 Json::prettify($recodedValue),
                 Json::prettify($recodedOther),
-                'Failed asserting that two json values are equal.'
+                'Failed asserting that two json values are equal.',
             );
         }
 

@@ -10,9 +10,11 @@
 namespace PHPUnit\TextUI\Output;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class NullPrinter implements Printer
+final readonly class NullPrinter implements Printer
 {
     public function print(string $buffer): void
     {

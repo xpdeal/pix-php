@@ -11,21 +11,22 @@ namespace PHPUnit\Event\Test;
 
 use const PHP_EOL;
 use function sprintf;
+use function trim;
 use PHPUnit\Event\Code;
 use PHPUnit\Event\Code\Throwable;
 use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class MarkedIncomplete implements Event
+final readonly class MarkedIncomplete implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
-    private readonly Code\Test $test;
-    private readonly Throwable $throwable;
+    private Telemetry\Info $telemetryInfo;
+    private Code\Test $test;
+    private Throwable $throwable;
 
     public function __construct(Telemetry\Info $telemetryInfo, Code\Test $test, Throwable $throwable)
     {
@@ -51,7 +52,7 @@ final class MarkedIncomplete implements Event
 
     public function asString(): string
     {
-        $message = $this->throwable->message();
+        $message = trim($this->throwable->message());
 
         if (!empty($message)) {
             $message = PHP_EOL . $message;
@@ -60,7 +61,7 @@ final class MarkedIncomplete implements Event
         return sprintf(
             'Test Marked Incomplete (%s)%s',
             $this->test->id(),
-            $message
+            $message,
         );
     }
 }

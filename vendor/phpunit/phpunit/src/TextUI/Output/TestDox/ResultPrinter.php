@@ -11,8 +11,6 @@ namespace PHPUnit\TextUI\Output\TestDox;
 
 use const PHP_EOL;
 use function array_map;
-use function assert;
-use function count;
 use function explode;
 use function implode;
 use function preg_match;
@@ -22,7 +20,8 @@ use function sprintf;
 use function str_starts_with;
 use function trim;
 use PHPUnit\Event\Code\Throwable;
-use PHPUnit\Event\TestData\NoDataSetFromDataProviderException;
+use PHPUnit\Event\Test\AfterLastTestMethodErrored;
+use PHPUnit\Event\Test\BeforeFirstTestMethodErrored;
 use PHPUnit\Framework\TestStatus\TestStatus;
 use PHPUnit\Logging\TestDox\TestResult as TestDoxTestResult;
 use PHPUnit\Logging\TestDox\TestResultCollection;
@@ -31,45 +30,106 @@ use PHPUnit\TextUI\Output\Printer;
 use PHPUnit\Util\Color;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
-final class ResultPrinter
+final readonly class ResultPrinter
 {
-    private readonly Printer $printer;
-    private readonly bool $colors;
+    private Printer $printer;
+    private bool $colors;
+    private int $columns;
+    private bool $printSummary;
 
-    public function __construct(Printer $printer, bool $colors)
+    public function __construct(Printer $printer, bool $colors, int $columns, bool $printSummary)
     {
-        $this->printer = $printer;
-        $this->colors  = $colors;
+        $this->printer      = $printer;
+        $this->colors       = $colors;
+        $this->columns      = $columns;
+        $this->printSummary = $printSummary;
     }
 
     /**
-     * @psalm-param array<string, TestResultCollection> $tests
+     * @param array<string, TestResultCollection> $tests
      */
-    public function print(array $tests, TestResult $result): void
+    public function print(TestResult $result, array $tests): void
+    {
+        $this->doPrint($tests, false);
+
+        if ($this->printSummary) {
+            $this->printer->print('Summary of tests with errors, failures, or issues:' . PHP_EOL . PHP_EOL);
+
+            $this->doPrint($tests, true);
+        }
+
+        $beforeFirstTestMethodErrored = [];
+        $afterLastTestMethodErrored   = [];
+
+        foreach ($result->testErroredEvents() as $error) {
+            if ($error instanceof BeforeFirstTestMethodErrored) {
+                $beforeFirstTestMethodErrored[$error->calledMethod()->className() . '::' . $error->calledMethod()->methodName()] = $error;
+            }
+
+            if ($error instanceof AfterLastTestMethodErrored) {
+                $afterLastTestMethodErrored[$error->calledMethod()->className() . '::' . $error->calledMethod()->methodName()] = $error;
+            }
+        }
+
+        $this->printBeforeClassOrAfterClassErrors(
+            'before-first-test',
+            $beforeFirstTestMethodErrored,
+        );
+
+        $this->printBeforeClassOrAfterClassErrors(
+            'after-last-test',
+            $afterLastTestMethodErrored,
+        );
+    }
+
+    /**
+     * @param array<string, TestResultCollection> $tests
+     */
+    private function doPrint(array $tests, bool $onlySummary): void
     {
         foreach ($tests as $prettifiedClassName => $_tests) {
+            $print = true;
+
+            if ($onlySummary) {
+                $found = false;
+
+                foreach ($_tests as $test) {
+                    if ($test->status()->isSuccess()) {
+                        continue;
+                    }
+
+                    $found = true;
+
+                    break;
+                }
+
+                if (!$found) {
+                    $print = false;
+                }
+            }
+
+            if (!$print) {
+                continue;
+            }
+
             $this->printPrettifiedClassName($prettifiedClassName);
 
             foreach ($_tests as $test) {
+                if ($onlySummary && $test->status()->isSuccess()) {
+                    continue;
+                }
+
                 $this->printTestResult($test);
             }
 
             $this->printer->print(PHP_EOL);
         }
-
-        $this->printTestRunnerWarningsAndDeprecations($result);
     }
 
-    public function flush(): void
-    {
-        $this->printer->flush();
-    }
-
-    /**
-     * @psalm-param string $prettifiedClassName
-     */
     private function printPrettifiedClassName(string $prettifiedClassName): void
     {
         $buffer = $prettifiedClassName;
@@ -81,18 +141,12 @@ final class ResultPrinter
         $this->printer->print($buffer . PHP_EOL);
     }
 
-    /**
-     * @throws NoDataSetFromDataProviderException
-     */
     private function printTestResult(TestDoxTestResult $test): void
     {
         $this->printTestResultHeader($test);
         $this->printTestResultBody($test);
     }
 
-    /**
-     * @throws NoDataSetFromDataProviderException
-     */
     private function printTestResultHeader(TestDoxTestResult $test): void
     {
         $buffer = ' ' . $this->symbolFor($test->status()) . ' ';
@@ -101,8 +155,8 @@ final class ResultPrinter
             $this->printer->print(
                 Color::colorizeTextBox(
                     $this->colorFor($test->status()),
-                    $buffer
-                )
+                    $buffer,
+                ),
             );
         } else {
             $this->printer->print($buffer);
@@ -122,7 +176,7 @@ final class ResultPrinter
         }
 
         $this->printTestResultBodyStart($test);
-        $this->printThrowable($test);
+        $this->printThrowable($test->status(), $test->throwable());
         $this->printTestResultBodyEnd($test);
     }
 
@@ -131,8 +185,8 @@ final class ResultPrinter
         $this->printer->print(
             $this->prefixLines(
                 $this->prefixFor('start', $test->status()),
-                ''
-            )
+                '',
+            ),
         );
 
         $this->printer->print(PHP_EOL);
@@ -145,19 +199,15 @@ final class ResultPrinter
         $this->printer->print(
             $this->prefixLines(
                 $this->prefixFor('last', $test->status()),
-                ''
-            )
+                '',
+            ),
         );
 
         $this->printer->print(PHP_EOL);
     }
 
-    private function printThrowable(TestDoxTestResult $test): void
+    private function printThrowable(TestStatus $status, Throwable $throwable): void
     {
-        $throwable = $test->throwable();
-
-        assert($throwable instanceof Throwable);
-
         $message    = trim($throwable->description());
         $stackTrace = $this->formatStackTrace($throwable->stackTrace());
         $diff       = '';
@@ -165,16 +215,16 @@ final class ResultPrinter
         if (!empty($message) && $this->colors) {
             ['message' => $message, 'diff' => $diff] = $this->colorizeMessageAndDiff(
                 $message,
-                $this->messageColorFor($test->status())
+                $this->messageColorFor($status),
             );
         }
 
         if (!empty($message)) {
             $this->printer->print(
                 $this->prefixLines(
-                    $this->prefixFor('message', $test->status()),
-                    $message
-                )
+                    $this->prefixFor('message', $status),
+                    $message,
+                ),
             );
 
             $this->printer->print(PHP_EOL);
@@ -183,9 +233,9 @@ final class ResultPrinter
         if (!empty($diff)) {
             $this->printer->print(
                 $this->prefixLines(
-                    $this->prefixFor('diff', $test->status()),
-                    $diff
-                )
+                    $this->prefixFor('diff', $status),
+                    $diff,
+                ),
             );
 
             $this->printer->print(PHP_EOL);
@@ -193,19 +243,43 @@ final class ResultPrinter
 
         if (!empty($stackTrace)) {
             if (!empty($message) || !empty($diff)) {
-                $prefix = $this->prefixFor('default', $test->status());
+                $tracePrefix = $this->prefixFor('default', $status);
             } else {
-                $prefix = $this->prefixFor('trace', $test->status());
+                $tracePrefix = $this->prefixFor('trace', $status);
             }
 
             $this->printer->print(
-                $this->prefixLines($prefix, PHP_EOL . $stackTrace)
+                $this->prefixLines($tracePrefix, PHP_EOL . $stackTrace),
             );
+        }
+
+        if ($throwable->hasPrevious()) {
+            $this->printer->print(PHP_EOL);
+
+            $this->printer->print(
+                $this->prefixLines(
+                    $this->prefixFor('default', $status),
+                    ' ',
+                ),
+            );
+
+            $this->printer->print(PHP_EOL);
+
+            $this->printer->print(
+                $this->prefixLines(
+                    $this->prefixFor('default', $status),
+                    'Caused by:',
+                ),
+            );
+
+            $this->printer->print(PHP_EOL);
+
+            $this->printThrowable($status, $throwable->previous());
         }
     }
 
     /**
-     * @psalm-return array{message: string, diff: string}
+     * @return array{message: string, diff: string}
      */
     private function colorizeMessageAndDiff(string $buffer, string $style): array
     {
@@ -238,7 +312,8 @@ final class ResultPrinter
         $diff    = implode(PHP_EOL, $diff);
 
         if (!empty($message)) {
-            $message = Color::colorizeTextBox($style, $message);
+            // Testdox output has a left-margin of 5; keep right-margin to prevent terminal scrolling
+            $message = Color::colorizeTextBox($style, $message, $this->columns - 7);
         }
 
         return [
@@ -277,13 +352,13 @@ final class ResultPrinter
             PHP_EOL,
             array_map(
                 static fn (string $line) => '   ' . $prefix . ($line ? ' ' . $line : ''),
-                preg_split('/\r\n|\r|\n/', $message)
-            )
+                preg_split('/\r\n|\r|\n/', $message),
+            ),
         );
     }
 
     /**
-     * @psalm-param 'default'|'start'|'message'|'diff'|'trace'|'last' $type
+     * @param 'default'|'diff'|'last'|'message'|'start'|'trace' $type
      */
     private function prefixFor(string $type, TestStatus $status): string
     {
@@ -299,8 +374,8 @@ final class ResultPrinter
                 'message' => '├',
                 'diff'    => '┊',
                 'trace'   => '╵',
-                'last'    => '┴'
-            }
+                'last'    => '┴',
+            },
         );
     }
 
@@ -322,7 +397,7 @@ final class ResultPrinter
             return 'fg-cyan';
         }
 
-        if ($status->isRisky() || $status->isIncomplete() || $status->isWarning()) {
+        if ($status->isIncomplete() || $status->isDeprecation() || $status->isNotice() || $status->isRisky() || $status->isWarning()) {
             return 'fg-yellow';
         }
 
@@ -347,7 +422,7 @@ final class ResultPrinter
             return 'fg-cyan';
         }
 
-        if ($status->isRisky() || $status->isIncomplete() || $status->isWarning()) {
+        if ($status->isIncomplete() || $status->isDeprecation() || $status->isNotice() || $status->isRisky() || $status->isWarning()) {
             return 'fg-yellow';
         }
 
@@ -368,84 +443,49 @@ final class ResultPrinter
             return '↩';
         }
 
-        if ($status->isRisky()) {
-            return '☢';
+        if ($status->isDeprecation() || $status->isNotice() || $status->isRisky() || $status->isWarning()) {
+            return '⚠';
         }
 
         if ($status->isIncomplete()) {
             return '∅';
         }
 
-        if ($status->isWarning()) {
-            return '⚠';
-        }
-
         return '?';
     }
 
-    private function printTestRunnerWarningsAndDeprecations(TestResult $result): void
+    /**
+     * @param 'after-last-test'|'before-first-test'                                            $type
+     * @param array<non-empty-string, AfterLastTestMethodErrored|BeforeFirstTestMethodErrored> $errors
+     */
+    private function printBeforeClassOrAfterClassErrors(string $type, array $errors): void
     {
-        if (!$result->hasTestRunnerTriggeredWarningEvents() &&
-            !$result->hasTestRunnerTriggeredDeprecationEvents()) {
+        if (empty($errors)) {
             return;
         }
 
-        if ($result->hasTestRunnerTriggeredWarningEvents()) {
-            $warnings = [];
-
-            foreach ($result->testRunnerTriggeredWarningEvents() as $warning) {
-                $warnings[] = $warning->message();
-            }
-
-            $this->printList($warnings, 'test runner warning');
-        }
-
-        if ($result->hasTestRunnerTriggeredDeprecationEvents()) {
-            $deprecations = [];
-
-            foreach ($result->testRunnerTriggeredWarningEvents() as $deprecation) {
-                $deprecations[] = $deprecation->message();
-            }
-
-            $this->printList($deprecations, 'test runner deprecation');
-        }
-    }
-
-    /**
-     * @psalm-param list<string> $elements
-     */
-    private function printList(array $elements, string $type): void
-    {
-        $count = count($elements);
-
         $this->printer->print(
             sprintf(
-                "There %s %d %s%s:\n\n",
-                ($count === 1) ? 'was' : 'were',
-                $count,
+                'These %s methods errored:' . PHP_EOL . PHP_EOL,
                 $type,
-                ($count === 1) ? '' : 's'
-            )
+            ),
         );
 
-        $i = 1;
+        $index = 0;
 
-        foreach ($elements as $element) {
-            $this->printListElement($i++, $element);
+        foreach ($errors as $method => $error) {
+            $this->printer->print(
+                sprintf(
+                    '%d) %s' . PHP_EOL,
+                    ++$index,
+                    $method,
+                ),
+            );
+
+            $this->printer->print(trim($error->throwable()->description()) . PHP_EOL . PHP_EOL);
+            $this->printer->print($this->formatStackTrace($error->throwable()->stackTrace()) . PHP_EOL);
         }
 
-        $this->printer->print("\n");
-    }
-
-    private function printListElement(int $number, string $text): void
-    {
-        $this->printer->print(
-            sprintf(
-                "%s%d) %s\n",
-                $number > 1 ? "\n" : '',
-                $number,
-                trim($text),
-            )
-        );
+        $this->printer->print(PHP_EOL);
     }
 }

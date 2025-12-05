@@ -9,10 +9,18 @@
  */
 namespace PHPUnit\TestRunner\TestResult;
 
+use function str_contains;
 use PHPUnit\Event\EventFacadeIsSealedException;
+use PHPUnit\Event\Facade as EventFacade;
 use PHPUnit\Event\UnknownSubscriberTypeException;
+use PHPUnit\Runner\DeprecationCollector\Facade as DeprecationCollectorFacade;
+use PHPUnit\TestRunner\IssueFilter;
+use PHPUnit\TextUI\Configuration\Configuration;
+use PHPUnit\TextUI\Configuration\Registry as ConfigurationRegistry;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class Facade
@@ -41,54 +49,44 @@ final class Facade
      * @throws EventFacadeIsSealedException
      * @throws UnknownSubscriberTypeException
      */
-    public static function hasTestErroredEvents(): bool
+    public static function shouldStop(): bool
     {
-        return self::collector()->hasTestErroredEvents();
-    }
+        $configuration = ConfigurationRegistry::get();
+        $collector     = self::collector();
 
-    /**
-     * @throws EventFacadeIsSealedException
-     * @throws UnknownSubscriberTypeException
-     */
-    public static function hasTestFailedEvents(): bool
-    {
-        return self::collector()->hasTestFailedEvents();
-    }
+        if (($configuration->stopOnDefect() || $configuration->stopOnError()) && $collector->hasErroredTests()) {
+            return true;
+        }
 
-    /**
-     * @throws EventFacadeIsSealedException
-     * @throws UnknownSubscriberTypeException
-     */
-    public static function hasWarningEvents(): bool
-    {
-        return self::collector()->hasWarningEvents();
-    }
+        if (($configuration->stopOnDefect() || $configuration->stopOnFailure()) && $collector->hasFailedTests()) {
+            return true;
+        }
 
-    /**
-     * @throws EventFacadeIsSealedException
-     * @throws UnknownSubscriberTypeException
-     */
-    public static function hasTestConsideredRiskyEvents(): bool
-    {
-        return self::collector()->hasTestConsideredRiskyEvents();
-    }
+        if (($configuration->stopOnDefect() || $configuration->stopOnWarning()) && $collector->hasWarnings()) {
+            return true;
+        }
 
-    /**
-     * @throws EventFacadeIsSealedException
-     * @throws UnknownSubscriberTypeException
-     */
-    public static function hasTestSkippedEvents(): bool
-    {
-        return self::collector()->hasTestSkippedEvents();
-    }
+        if (($configuration->stopOnDefect() || $configuration->stopOnRisky()) && $collector->hasRiskyTests()) {
+            return true;
+        }
 
-    /**
-     * @throws EventFacadeIsSealedException
-     * @throws UnknownSubscriberTypeException
-     */
-    public static function hasTestMarkedIncompleteEvents(): bool
-    {
-        return self::collector()->hasTestMarkedIncompleteEvents();
+        if (self::stopOnDeprecation($configuration)) {
+            return true;
+        }
+
+        if ($configuration->stopOnNotice() && $collector->hasNotices()) {
+            return true;
+        }
+
+        if ($configuration->stopOnIncomplete() && $collector->hasIncompleteTests()) {
+            return true;
+        }
+
+        if ($configuration->stopOnSkipped() && $collector->hasSkippedTests()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -98,9 +96,35 @@ final class Facade
     private static function collector(): Collector
     {
         if (self::$collector === null) {
-            self::$collector = new Collector;
+            $configuration = ConfigurationRegistry::get();
+
+            self::$collector = new Collector(
+                EventFacade::instance(),
+                new IssueFilter($configuration->source()),
+            );
         }
 
         return self::$collector;
+    }
+
+    private static function stopOnDeprecation(Configuration $configuration): bool
+    {
+        if (!$configuration->stopOnDeprecation()) {
+            return false;
+        }
+
+        $deprecations = DeprecationCollectorFacade::filteredDeprecations();
+
+        if (!$configuration->hasSpecificDeprecationToStopOn()) {
+            return $deprecations !== [];
+        }
+
+        foreach ($deprecations as $deprecation) {
+            if (str_contains($deprecation, $configuration->specificDeprecationToStopOn())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

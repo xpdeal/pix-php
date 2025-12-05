@@ -10,31 +10,51 @@
 namespace PHPUnit\Event\Test;
 
 use const PHP_EOL;
+use function implode;
 use function sprintf;
 use PHPUnit\Event\Code\Test;
 use PHPUnit\Event\Event;
 use PHPUnit\Event\Telemetry;
 
 /**
- * @psalm-immutable
+ * @immutable
  *
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  */
-final class ErrorTriggered implements Event
+final readonly class ErrorTriggered implements Event
 {
-    private readonly Telemetry\Info $telemetryInfo;
-    private readonly Test $test;
-    private readonly string $message;
-    private readonly string $file;
-    private readonly int $line;
+    private Telemetry\Info $telemetryInfo;
+    private Test $test;
 
-    public function __construct(Telemetry\Info $telemetryInfo, Test $test, string $message, string $file, int $line)
+    /**
+     * @var non-empty-string
+     */
+    private string $message;
+
+    /**
+     * @var non-empty-string
+     */
+    private string $file;
+
+    /**
+     * @var positive-int
+     */
+    private int $line;
+    private bool $suppressed;
+
+    /**
+     * @param non-empty-string $message
+     * @param non-empty-string $file
+     * @param positive-int     $line
+     */
+    public function __construct(Telemetry\Info $telemetryInfo, Test $test, string $message, string $file, int $line, bool $suppressed)
     {
         $this->telemetryInfo = $telemetryInfo;
         $this->test          = $test;
         $this->message       = $message;
         $this->file          = $file;
         $this->line          = $line;
+        $this->suppressed    = $suppressed;
     }
 
     public function telemetryInfo(): Telemetry\Info
@@ -47,19 +67,33 @@ final class ErrorTriggered implements Event
         return $this->test;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function message(): string
     {
         return $this->message;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function file(): string
     {
         return $this->file;
     }
 
+    /**
+     * @return positive-int
+     */
     public function line(): int
     {
         return $this->line;
+    }
+
+    public function wasSuppressed(): bool
+    {
+        return $this->suppressed;
     }
 
     public function asString(): string
@@ -70,10 +104,18 @@ final class ErrorTriggered implements Event
             $message = PHP_EOL . $message;
         }
 
+        $details = [$this->test->id()];
+
+        if ($this->suppressed) {
+            $details[] = 'suppressed using operator';
+        }
+
         return sprintf(
-            'Test Triggered Error (%s)%s',
-            $this->test->id(),
-            $message
+            'Test Triggered Error (%s) in %s:%d%s',
+            implode(', ', $details),
+            $this->file,
+            $this->line,
+            $message,
         );
     }
 }

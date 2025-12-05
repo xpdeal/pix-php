@@ -13,6 +13,8 @@ use function sprintf;
 use RuntimeException;
 
 /**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+ *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class InvalidVersionOperatorException extends RuntimeException implements Exception
@@ -22,8 +24,8 @@ final class InvalidVersionOperatorException extends RuntimeException implements 
         parent::__construct(
             sprintf(
                 '"%s" is not a valid version_compare() operator',
-                $operator
-            )
+                $operator,
+            ),
         );
     }
 }
